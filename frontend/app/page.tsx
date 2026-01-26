@@ -1,5 +1,5 @@
 import Navbar from '@/components/client/navbar';
-import BannerCarousel from '@/components/client/banner-carousel';
+import {BannerCarousel} from '@/components/client/banner-carousel';
 import CategoryCarousel from '@/components/client/category-carousel';
 
 export default function Home() {
@@ -9,7 +9,7 @@ export default function Home() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-b from-muted/50 to-background">
+      <section className="bg-linear-to-b from-muted/50 to-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 md:pt-12">
           {/* Banner Carousel */}
           <BannerCarousel />
@@ -22,7 +22,7 @@ export default function Home() {
       </div>
 
       {/* Featured Section Placeholder */}
-      <section className="bg-gradient-to-b from-background to-muted/30 py-16 md:py-24">
+      <section className="bg-linaer-to-b from-background to-muted/30 py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl md:text-4xl font-bold text-primary mb-8 text-balance">
             Featured Products

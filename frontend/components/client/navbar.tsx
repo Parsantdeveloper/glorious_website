@@ -68,10 +68,8 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/" className="shrink-0">
             <div className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                <span className="text-secondary text-xl font-bold">⚡</span>
-              </div>
-              <span className="font-bold text-xl text-primary hidden sm:inline">GadgetHub</span>
+             
+              <span className="font-bold text-xl text-primary hidden sm:inline">Glorious</span>
             </div>
           </Link>
 
@@ -119,13 +117,13 @@ export default function Navbar() {
           {/* Right Side Actions */}
           <div className="flex items-center gap-2 sm:gap-4">
             {/* PC Builder Button */}
-            <Link
+            {/* <Link
               href="/pc-builder"
               className="hidden md:flex items-center gap-2 bg-secondary hover:bg-secondary/90 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
             >
               <Zap className="w-5 h-5" />
               <span>PC Builder</span>
-            </Link>
+            </Link> */}
 
             {/* Cart Button */}
             <Link
