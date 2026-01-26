@@ -9,21 +9,6 @@ import { LogOut, Settings } from 'lucide-react'
 export default function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
-  const [isLoggingOut, setIsLoggingOut] = useState(false)
-
-  const handleLogout = async () => {
-    setIsLoggingOut(true)
-    try {
-      const response = await fetch('/api/auth/logout', { method: 'POST' })
-      if (response.ok) {
-        router.push('/login')
-      }
-    } catch (error) {
-      console.error('Logout failed:', error)
-    } finally {
-      setIsLoggingOut(false)
-    }
-  }
 
   const navLinks = [
     {
@@ -65,13 +50,11 @@ export default function Sidebar() {
 
       {/* Logout Button */}
       <Button
-        onClick={handleLogout}
-        disabled={isLoggingOut}
+       onClick={()=>router.push("/logout")}
         variant="outline"
-        className="w-full gap-2 border-border text-foreground hover:bg-destructive hover:text-destructive-foreground bg-transparent"
-      >
+        className="w-full gap-2 cursor-pointer border-border text-foreground hover:bg-destructive hover:text-destructive-foreground bg-transparent"
+      > Logout
         <LogOut size={18} />
-        {isLoggingOut ? 'Logging out...' : 'Logout'}
       </Button>
     </aside>
   )

@@ -35,7 +35,7 @@ const NavbarProfile = async () => {
     )
   }
 
-  const { name, email, image } = session
+  const { name, email, image } = session.user;
 
   return (
     <DropdownMenu>
@@ -44,7 +44,7 @@ const NavbarProfile = async () => {
           <Avatar className="h-9 w-9">
             <AvatarImage src={image} alt={name} />
             <AvatarFallback>
-              {name?.charAt(0).toUpperCase()||"P"}
+              {name?.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
         </button>
