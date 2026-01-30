@@ -1,13 +1,28 @@
 'use client'
 
-import React from "react"
-
-import { useState, useEffect } from 'react'
+import React from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { X } from 'lucide-react'
+import { z } from 'zod'
+
+const baseAddressSchema = {
+  fullName: z.string().min(2).max(100),
+  phone: z.string().regex(/^(?:\+977)?9[6-9]\d{8}$/),
+  district: z.string().min(2).max(50),  
+  city: z.string().min(2).max(50),
+  tole: z.string().min(2).max(100),
+  postalCode: z.string().regex(/^\d{5}$/).optional(),
+  addressLine: z.string().max(200).optional(),
+};
+
+export const createAddressSchema = z.object(baseAddressSchema);
+
+export const updateAddressSchema = z.object(baseAddressSchema).partial();
 
 interface Address {
   id: string
@@ -28,76 +43,42 @@ interface AddressFormProps {
   onCancel: () => void
 }
 
+// Use Zod schema based on whether it's edit or create
+const getSchema = (address?: Address) => (address ? updateAddressSchema : createAddressSchema)
+
 export default function AddressForm({ userId, address, onSaved, onCancel }: AddressFormProps) {
-  const [formData, setFormData] = useState({
-    fullName: '',
-    phone: '',
-    addressLine: '',
-    tole: '',
-    district: '',
-    city: '',
-    postalCode: '',
+  const schema = getSchema(address)
+
+  const { register, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm<z.infer<typeof schema>>({
+    resolver: zodResolver(schema),
+    defaultValues: address ? { ...address } : {},
   })
-  const [isSaving, setIsSaving] = useState(false)
-  const [error, setError] = useState('')
 
-  useEffect(() => {
-    if (address) {
-      setFormData({
-        fullName: address.fullName,
-        phone: address.phone,
-        addressLine: address.addressLine || '',
-        tole: address.tole,
-        district: address.district,
-        city: address.city,
-        postalCode: address.postalCode || '',
-      })
-    }
-  }, [address])
+  // Reset form when address prop changes
+  React.useEffect(() => {
+    if (address) reset({ ...address })
+  }, [address, reset])
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }))
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-
-    // Validation
-    if (!formData.fullName || !formData.phone || !formData.tole || !formData.district || !formData.city) {
-      setError('Please fill in all required fields')
-      return
-    }
-
+  const onSubmit = async (data: z.infer<typeof schema>) => {
     try {
-      setIsSaving(true)
       const method = address ? 'PUT' : 'POST'
-      const url = address ? `/api/addresses/${address.id}` : '/api/addresses'
+      const url = address ? `${process.env.NEXT_PUBLIC_API_URL}/api/user/address/${address.id}` : `${process.env.NEXT_PUBLIC_API_URL}/api/user/address`
 
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          userId,
-        }),
+        credentials: 'include', // important if using cookies
+        body: JSON.stringify({ ...data, userId }),
       })
 
-      if (!response.ok) {
-        throw new Error('Failed to save address')
-      }
+      if (!response.ok) throw new Error('Failed to save address')
 
-      const savedAddress = await response.json()
+      const payload = await response.json()
+      const savedAddress: Address = payload?.data ?? payload
       onSaved(savedAddress)
     } catch (err) {
-      setError('Failed to save address. Please try again.')
       console.error(err)
-    } finally {
-      setIsSaving(false)
+      alert('Failed to save address. Please try again.')
     }
   }
 
@@ -116,146 +97,102 @@ export default function AddressForm({ userId, address, onSaved, onCancel }: Addr
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {error && (
-          <div className="rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive">
-            {error}
-          </div>
-        )}
-
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Full Name */}
         <div className="space-y-2">
-          <Label htmlFor="fullName" className="text-sm font-semibold text-foreground">
-            Full Name <span className="text-destructive">*</span>
-          </Label>
+          <Label htmlFor="fullName">Full Name <span className="text-destructive">*</span></Label>
           <Input
             id="fullName"
-            name="fullName"
-            type="text"
-            value={formData.fullName}
-            onChange={handleChange}
+            {...register('fullName')}
             placeholder="Enter your full name"
             className="border-border bg-background text-foreground placeholder:text-muted-foreground"
-            required
           />
+          {errors.fullName && <p className="text-destructive text-sm">{errors.fullName.message}</p>}
         </div>
 
         {/* Phone */}
         <div className="space-y-2">
-          <Label htmlFor="phone" className="text-sm font-semibold text-foreground">
-            Phone Number <span className="text-destructive">*</span>
-          </Label>
+          <Label htmlFor="phone">Phone Number <span className="text-destructive">*</span></Label>
           <Input
             id="phone"
-            name="phone"
-            type="tel"
-            value={formData.phone}
-            onChange={handleChange}
-            placeholder="Enter your phone number"
+            {...register('phone')}
+            placeholder="e.g., +9779812345678"
             className="border-border bg-background text-foreground placeholder:text-muted-foreground"
-            required
           />
+          {errors.phone && <p className="text-destructive text-sm">{errors.phone.message}</p>}
         </div>
 
         {/* Address Line */}
         <div className="space-y-2">
-          <Label htmlFor="addressLine" className="text-sm font-semibold text-foreground">
-            Address Line <span className="text-muted-foreground">(Optional)</span>
-          </Label>
+          <Label htmlFor="addressLine">Address Line <span className="text-muted-foreground">(Optional)</span></Label>
           <Input
             id="addressLine"
-            name="addressLine"
-            type="text"
-            value={formData.addressLine}
-            onChange={handleChange}
-            placeholder="e.g., Apartment, building name"
+            {...register('addressLine')}
+            placeholder="Apartment, building name"
             className="border-border bg-background text-foreground placeholder:text-muted-foreground"
           />
+          {errors.addressLine && <p className="text-destructive text-sm">{errors.addressLine.message}</p>}
         </div>
 
         {/* Tole */}
         <div className="space-y-2">
-          <Label htmlFor="tole" className="text-sm font-semibold text-foreground">
-            Tole <span className="text-destructive">*</span>
-          </Label>
+          <Label htmlFor="tole">Tole <span className="text-destructive">*</span></Label>
           <Input
             id="tole"
-            name="tole"
-            type="text"
-            value={formData.tole}
-            onChange={handleChange}
-            placeholder="Enter your tole/street"
+            {...register('tole')}
+            placeholder="Enter your street/tole"
             className="border-border bg-background text-foreground placeholder:text-muted-foreground"
-            required
           />
+          {errors.tole && <p className="text-destructive text-sm">{errors.tole.message}</p>}
         </div>
 
-        {/* District and City Grid */}
+        {/* District & City */}
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="district" className="text-sm font-semibold text-foreground">
-              District <span className="text-destructive">*</span>
-            </Label>
+            <Label htmlFor="district">District <span className="text-destructive">*</span></Label>
             <Input
               id="district"
-              name="district"
-              type="text"
-              value={formData.district}
-              onChange={handleChange}
-              placeholder="e.g., Kathmandu"
+              {...register('district')}
+              placeholder="Kathmandu"
               className="border-border bg-background text-foreground placeholder:text-muted-foreground"
-              required
             />
+            {errors.district && <p className="text-destructive text-sm">{errors.district.message}</p>}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="city" className="text-sm font-semibold text-foreground">
-              City <span className="text-destructive">*</span>
-            </Label>
+            <Label htmlFor="city">City <span className="text-destructive">*</span></Label>
             <Input
               id="city"
-              name="city"
-              type="text"
-              value={formData.city}
-              onChange={handleChange}
-              placeholder="e.g., Kathmandu"
+              {...register('city')}
+              placeholder="Kathmandu"
               className="border-border bg-background text-foreground placeholder:text-muted-foreground"
-              required
             />
+            {errors.city && <p className="text-destructive text-sm">{errors.city.message}</p>}
           </div>
         </div>
 
         {/* Postal Code */}
         <div className="space-y-2">
-          <Label htmlFor="postalCode" className="text-sm font-semibold text-foreground">
-            Postal Code <span className="text-muted-foreground">(Optional)</span>
-          </Label>
+          <Label htmlFor="postalCode">Postal Code <span className="text-muted-foreground">(Optional)</span></Label>
           <Input
             id="postalCode"
-            name="postalCode"
-            type="text"
-            value={formData.postalCode}
-            onChange={handleChange}
+            {...register('postalCode')}
             placeholder="e.g., 44600"
             className="border-border bg-background text-foreground placeholder:text-muted-foreground"
           />
+          {errors.postalCode && <p className="text-destructive text-sm">{errors.postalCode.message}</p>}
         </div>
 
         {/* Form Actions */}
         <div className="flex gap-3 border-t border-border pt-6">
           <Button
             type="submit"
-            disabled={isSaving}
+            disabled={isSubmitting}
             className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
           >
-            {isSaving ? 'Saving...' : address ? 'Update Address' : 'Save Address'}
+            {isSubmitting ? 'Saving...' : address ? 'Update Address' : 'Save Address'}
           </Button>
-          <Button
-            type="button"
-            onClick={onCancel}
-            variant="outline"
-            className="flex-1 border-border bg-transparent"
-          >
+          <Button type="button" onClick={onCancel} variant="outline" className="flex-1 border-border bg-transparent">
             Cancel
           </Button>
         </div>

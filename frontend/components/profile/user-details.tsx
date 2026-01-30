@@ -1,26 +1,17 @@
 'use client'
 
 import { Card } from '@/components/ui/card'
-import { Mail, User, Calendar } from 'lucide-react'
-
-interface UserDetailsProps {
-  user: {
-    id: string
-    name: string
-    email: string
-    emailVerified: boolean
-    image?: string
-    createdAt: string
-  }
-}
-
-export default function UserDetails({ user }: UserDetailsProps) {
-  const formattedDate = new Date(user.createdAt).toLocaleDateString('en-US', {
+import { Mail, User ,Calendar } from 'lucide-react'
+import { useAuthStore } from '@/app/store/useAuthStore'
+import Image from 'next/image'
+export default function UserDetails() {
+  const {user}=useAuthStore();
+  if(!user?.createdAt) return null
+  const formattedDate = new Date(user?.createdAt).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   })
-
   return (
     <section>
       <div className="mb-6">
@@ -32,21 +23,23 @@ export default function UserDetails({ user }: UserDetailsProps) {
         <div className="space-y-8">
           {/* Profile Header with Avatar */}
           <div className="flex items-center gap-6 border-b border-border pb-8">
-            {user.image ? (
-              <img
+            {user?.image ? (
+              <Image
                 src={user.image || "/placeholder.svg"}
                 alt={user.name}
+                width={20}
+                height={20}
                 className="h-20 w-20 rounded-full object-cover border border-border"
               />
             ) : (
               <div className="flex h-20 w-20 items-center justify-center rounded-full bg-secondary">
-                <span className="text-2xl font-semibold text-secondary-foreground">{user.name.charAt(0)}</span>
+                <span className="text-2xl font-semibold text-secondary-foreground">{user?.name.charAt(0)}</span>
               </div>
             )}
             <div>
-              <h3 className="text-2xl font-semibold text-foreground">{user.name}</h3>
+              <h3 className="text-2xl font-semibold text-foreground">{user?.name}</h3>
               <p className="text-sm text-muted-foreground">
-                {user.emailVerified ? 'Email Verified' : 'Email Not Verified'}
+             Email Verified
               </p>
             </div>
           </div>
@@ -59,7 +52,7 @@ export default function UserDetails({ user }: UserDetailsProps) {
                 <User size={16} />
                 Full Name
               </div>
-              <p className="text-foreground">{user.name}</p>
+              <p className="text-foreground">{user?.name}</p>
             </div>
 
             {/* Email */}
@@ -68,7 +61,7 @@ export default function UserDetails({ user }: UserDetailsProps) {
                 <Mail size={16} />
                 Email Address
               </div>
-              <p className="break-all text-foreground">{user.email}</p>
+              <p className="break-all text-foreground">{user?.email}</p>
             </div>
 
             {/* Member Since */}
