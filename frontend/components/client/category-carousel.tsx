@@ -3,29 +3,22 @@
 import { useState, useRef, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface Category {
-  id: number;
+  id: string;
   name: string;
-  icon: string;
   slug: string;
-  description: string;
+  imageUrl: string | null;
 }
 
-const CATEGORIES: Category[] = [
-  { id: 1, name: 'Smartphones', icon: '📱', slug: 'smartphones', description: 'Latest mobile devices' },
-  { id: 2, name: 'Laptops', icon: '💻', slug: 'laptops', description: 'High-performance computers' },
-  { id: 3, name: 'Audio', icon: '🎧', slug: 'audio', description: 'Premium sound systems' },
-  { id: 4, name: 'Gaming', icon: '🎮', slug: 'gaming', description: 'Gaming gear' },
-  { id: 5, name: 'Wearables', icon: '⌚', slug: 'wearables', description: 'Smart watches' },
-  { id: 6, name: 'Tablets', icon: '📱', slug: 'tablets', description: 'Portable displays' },
-  { id: 7, name: 'Cameras', icon: '📷', slug: 'cameras', description: 'Professional cameras' },
-  { id: 8, name: 'TVs', icon: '📺', slug: 'tvs', description: '4K displays' },
-  { id: 9, name: 'Accessories', icon: '🔌', slug: 'accessories', description: 'Tech accessories' },
-  { id: 10, name: 'Smart Home', icon: '🏠', slug: 'smart-home', description: 'Home automation' },
-];
+interface CategoryCarouselProps {
+  data: Category[];
+}
 
-export default function CategoryCarousel() {
+export default function CategoryCarousel({data}: CategoryCarouselProps) {
+      console.log("CategoryCarousel data:", data);
+
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -75,21 +68,26 @@ export default function CategoryCarousel() {
               scrollbarColor: 'var(--secondary) transparent',
             }}
           >
-            {CATEGORIES.map((category) => (
+            {data.map((category) => (
               <Link
                 key={category.id}
                 href={`/category/${category.slug}`}
                 className="flex-shrink-0 group/card w-32 md:w-40 transition-transform hover:scale-105"
               >
                 <div className="bg-white border border-border rounded-lg p-4 text-center hover:shadow-lg transition-shadow h-full flex flex-col items-center justify-center gap-3">
-                  <div className="text-4xl md:text-5xl">{category.icon}</div>
+                  <div className="text-4xl md:text-5xl">
+                 <Image
+                   src={category.imageUrl ?? "/placeholder.png"}
+                   width={40}
+                   height={40}
+                   alt={category.name}
+                 />
+                  </div>
                   <div>
                     <h3 className="font-bold text-primary text-sm md:text-base line-clamp-2">
                       {category.name}
                     </h3>
-                    <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
-                      {category.description}
-                    </p>
+                   
                   </div>
                 </div>
               </Link>

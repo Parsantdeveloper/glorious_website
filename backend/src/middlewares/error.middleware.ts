@@ -1,19 +1,35 @@
-import {  Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { ZodError } from "zod";
-
+import { AppError } from "utils/AppError";
 
 export const errorHandler = (
-err: any,
-// req: Request,
-res: Response,
-// next: NextFunction
+  err: any,
+  req: Request,
+  res: Response,
+  next: NextFunction
 ) => {
-if (err instanceof ZodError) {
-return res.status(400).json(err);
-}
+  // Zod validation errors
+  if (err instanceof ZodError) {
+    return res.status(400).json({
+      success: false,
+      message: "Validation error",
+      errors: err.flatten(),
+    });
+  }
 
+  // Known operational errors
+  if (err instanceof AppError) {
+    return res.status(err.statusCode).json({
+      success: false,
+      message: err.message,
+    });
+  }
 
-return res.status(err.statusCode || 500).json({
-message: err.message || "Internal Server Error",
-});
+  // Unknown / programmer errors
+  console.error("UNHANDLED ERROR 💥", err);
+
+  return res.status(500).json({
+    success: false,
+    message: "Internal Server Error",
+  });
 };

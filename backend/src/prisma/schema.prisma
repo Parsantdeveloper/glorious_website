@@ -86,3 +86,43 @@ model address {
   @@index([userId])
 }
 
+model Banner {
+  id       String   @id @default(uuid())
+  imageUrl  String
+  imageId   String?
+  linkUrl   String?
+  validFrom DateTime?
+  validUntil DateTime?
+  isActive  Boolean  @default(true)
+  order    Int      @default(0)
+  @@index([isActive])
+@@index([validFrom, validUntil])
+
+}
+
+
+model Upload {
+  id       String   @id @default(uuid())  
+  url       String
+  public_id  String
+  createdAt DateTime @default(now())
+}
+
+model Category {
+ id     String   @id @default(uuid())
+ name   String 
+ description String ? 
+ slug   String   @unique
+ imageUrl String? 
+ imageId  String?
+ parentId String?
+ parent   Category? @relation("CategoryTree", fields: [parentId], references: [id])
+ children Category[] @relation("CategoryTree")
+ isActive Boolean  @default(true)
+ sortOrder Int      @default(0)
+ metaTitle String?
+ metaDescription String?
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ 
+}

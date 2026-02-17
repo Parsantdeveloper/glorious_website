@@ -1,10 +1,15 @@
-import { user } from "../generated/prisma/client";
-import { session } from "../generated/prisma/client";
 
+
+import {user} from "../config/prisma";
+import {session} from "../config/prisma";
+
+interface user {
+  role : "USER" | "ADMIN"
+}
 declare global {
   namespace Express {
     interface Request {
-      user?: user;
+      user?: user 
       session?:session;
     }
   }

@@ -3,7 +3,7 @@ import { headers } from 'next/headers'
 import ClientAuthProvider from '@/components/client/client-provider'
 
 export default async function ProfileLayout({ children }: { children: React.ReactNode }) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/me`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/me`, {
     cache: 'no-store',
     credentials: 'include',
     headers: await headers(),

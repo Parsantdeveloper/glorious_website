@@ -4,9 +4,7 @@ import axios from "axios";
 export const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL, // Your API base URL
   withCredentials: true,                     // Include cookies automatically
-  headers: {
-    "Content-Type": "application/json",
-  },
+ 
 });
 
 // Optional: Interceptors for request or response
