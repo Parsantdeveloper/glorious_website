@@ -21,11 +21,12 @@ export class ApiResponse<T> {
     this.meta = meta;
   }
 
-  static success<T>(data: T, message = "Success") {
+  static success<T>(data: T, meta?: Record<string, any>, message = "Success") {
     return new ApiResponse<T>({
       success: true,
       message,
       data,
+      meta
     });
   }
 

@@ -8,6 +8,7 @@ import userRoutes from "./modules/user/user.route";
 import bannerRoutes from "./modules/banner/banner.route";
 import uploadRoutes from "./modules/uploads/upload.route";
 import categoryRoutes from "./modules/category/category.route";
+import brandRouter from "./modules/brand/brand.route";
 import { errorHandler } from "./middlewares/error.middleware";
 import dotenv from "dotenv"
 import cron from "node-cron";
@@ -38,5 +39,6 @@ app.use("/api/user", userRoutes);
 app.use("/api/banner", bannerRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/category", categoryRoutes);
+app.use("/api/brand", brandRouter);
 
 app.use(errorHandler);
