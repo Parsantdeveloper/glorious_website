@@ -23,9 +23,19 @@ export const uploadFile =async (req:Request,res:Response,next:NextFunction)=>{
     }
 }
 
-export let deleteImageName=async(imageUrl:string)=>{
-     
-}
+ export const deletefile = async (req:Request,res:Response,next:NextFunction)=>{
+  try {
+
+    const { public_id } = req.body as { public_id: string };
+    console.log("Deleting file with public_id:", public_id);
+   const image = await cloudinary.uploader.destroy(public_id);
+    if(image.result === 'ok'){
+      return res.status(200).json({message:'File deleted successfully'});
+    }
+  } catch (error) {
+    next(error);
+  }
+ }
 
  export let updateImageName = async (oldfileId:string)=>{
     try {

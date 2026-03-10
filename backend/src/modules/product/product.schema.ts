@@ -1,3 +1,4 @@
+import { skip } from "node:test";
 import { z } from "zod";
 
 export const createProductSchema = z.object({
@@ -8,12 +9,17 @@ export const createProductSchema = z.object({
     isActive: z.boolean().default(true),
 });
 
+const variantAttributesSchema = z.record(
+  z.string(),
+  z.union([z.string(), z.number()])
+);
+
 export const productVariantSchema = z.object({
     price: z.number().positive(),
     salePrice: z.number().positive().optional(),
     stockCount: z.number().int().nonnegative(),
 
-    attributes: z.json().optional(),
+    attributes: variantAttributesSchema.optional(),
     images: z.array(
         z.object({
             url: z.string().url(),
@@ -30,14 +36,15 @@ export const productVariantSchema = z.object({
     }).optional(),
 
     isActive: z.boolean().default(true),
-}).refine((data)=>{
-    if(data.salePrice && data.salePrice > data.price){
-        return {
-            message:"Sale price cannot be greater than regular price",
-            path:["salePrice"]
-        }
+}).superRefine((data, ctx) => {
+    if (data.salePrice && data.salePrice > data.price) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Sale price cannot be greater than regular price",
+        path: ["salePrice"]
+      });
     }
-})
+  });
 
 export const productSpecificationSchema = z.object({
     key: z.string().min(1).max(100),
@@ -51,3 +58,69 @@ export const createProductPayloadSchema=z.object({
 })
 
 export type CreateProductPayload = z.infer<typeof createProductPayloadSchema>;
+
+export type ProductVariant = z.infer<typeof productVariantSchema>;
+export const updateProductPayloadSchema = z.object({
+    name: z.string().min(2).max(255).optional(),
+    description: z.string().min(2).max(5000).optional(),
+    categoryId: z.string().uuid("Invalid categoryId").optional(),
+    brandId: z.string().uuid("Invalid brandId").optional(),
+    isActive: z.boolean().default(true).optional(),
+})
+
+export type UpdateProductPayload = z.infer<typeof updateProductPayloadSchema>;
+
+export const updateProductVariantPayloadSchema = z.object({
+    price: z.number().positive().optional(),
+    salePrice: z.number().positive().optional(),
+    stockCount: z.number().int().nonnegative().optional(),
+
+    attributes: variantAttributesSchema.optional(),
+    images: z.array(
+        z.object({
+            url: z.string().url(),
+            alt: z.string().optional(),
+            position: z.number().int().nonnegative().optional(),
+        })
+    ).optional(),
+
+    weight: z.number().positive().optional(),
+    dimensions: z.object({
+        length: z.number().positive(),
+        width: z.number().positive(),
+        height: z.number().positive(),
+    }).optional(),
+
+    isActive: z.boolean().default(true).optional(),
+}).superRefine((data, ctx) => {
+    if (data.salePrice && data.price && data.salePrice > data.price) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Sale price cannot be greater than regular price",
+
+        });
+    }
+    });
+
+export type UpdateProductVariantPayload = z.infer<typeof updateProductVariantPayloadSchema>;
+
+export const updateProductSpecificationPayloadSchema = z.object({
+    key: z.string().min(1).max(100).optional(),
+    value: z.string().min(1).max(500).optional(),
+})
+
+export type UpdateProductSpecification = z.infer<typeof updateProductSpecificationPayloadSchema>;
+
+
+export const getProductsQuerySchema = z.object({
+    search: z.string().min(1).max(255).optional(),
+    category: z.string().uuid("Invalid category id").optional(),
+    brand: z.string().uuid("Invalid brand id").optional(),
+    minPrice: z.number().positive().optional(),
+    maxPrice: z.number().positive().optional(),
+    isActive: z.boolean().default(true).optional(),
+     page: z.coerce.number().min(1).default(1),
+  limit: z.coerce.number().min(1).max(50).default(10),
+    price: z.enum(["asc", "desc"]).optional(),
+})
+export type GetProductsQuery = z.infer<typeof getProductsQuerySchema>;

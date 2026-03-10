@@ -140,51 +140,41 @@ model Brand {
  @@index([isActive])
 }
 
-model Product{
-  id         String   @id @default(uuid())
-  name       String
-  description String?
-  slug      String   @unique
-  categoryId String
-  category   Category @relation(fields: [categoryId], references: [id])
-  brandId   String
-  brand     Brand    @relation(fields: [brandId], references: [id])
-  avgRating Float?
-  reviewCount Int     @default(0)
-  isActive  Boolean  @default(true)
-  metadata Json? 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  variants ProductVariant[]
-  specifications ProductSpecification[]
-}
+  model Product{
+    id         String   @id @default(uuid())
+    name       String
+    description String?
+    slug      String   @unique
+    categoryId String
+    category   Category @relation(fields: [categoryId], references: [id])
+    brandId   String
+    brand     Brand    @relation(fields: [brandId], references: [id])
+    avgRating Float?
+    reviewCount Int     @default(0)
+    isActive  Boolean  @default(true)
+    metadata Json? 
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    variants ProductVariant[]
+    specifications Json? // e.g. {"material": "cotton", "origin": "USA"}
+  }
 
-model ProductVariant {
- id  String  @id @default(uuid())
- productId String
- product   Product @relation(fields: [productId], references: [id])
- sku      String   @unique
- price    Decimal  @db.Decimal(10, 2)
- salePrice Decimal? @db.Decimal(10, 2)
- stockCount Int   @default(0)
- isActive Boolean  @default(true)
- isInStock Boolean  @default(true)
- attributes Json? // e.g. {"color": "red", "size": "M"}
- images Json? // [url , alt , position]
- weight Float ? 
- dimensions Json? // e.g. {"length": 10, "width": 5, "height": 2}
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  @@index([productId])
-}
-
-model ProductSpecification{
- id String  @id @default(uuid())
- productId  String
- product   Product @relation(fields: [productId], references: [id])
- key  String
- value String
- @@index([productId])
- @@index([key])
-}
+  model ProductVariant {
+  id  String  @id @default(uuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  sku      String   @unique
+  price    Decimal  @db.Decimal(10, 2)
+  salePrice Decimal? @db.Decimal(10, 2)
+  stockCount Int   @default(0)
+  isActive Boolean  @default(true)
+  isInStock Boolean  @default(true)
+  attributes Json? // e.g. {"color": "red", "size": "M"}
+  images Json? // [url , alt , position]
+  weight Float ? 
+  dimensions Json? // e.g. {"length": 10, "width": 5, "height": 2}
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    @@index([productId])
+  }
 
