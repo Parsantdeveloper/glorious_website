@@ -4,7 +4,7 @@ import { getSessionFromCookieHeader } from '@/lib/auth-session'
 
 const publicRoutes = new Set(['/login', '/error'])
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
   const session = await getSessionFromCookieHeader(request.headers.get('cookie'))
   const isPublicRoute = publicRoutes.has(pathname)
