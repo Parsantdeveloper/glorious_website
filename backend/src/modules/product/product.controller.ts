@@ -51,7 +51,7 @@ export const updateProduct= async (req:Request, res:Response, next:Function)=>{
 
 export const updateProductVariant = async (req:Request, res:Response, next:Function)=>{
   try {
-     const id = req.params.id as string ;
+     const id = req.params.slug as string ;
       const variantId = req.params.variantId as string ;
       const payload = updateProductVariantPayloadSchema.parse(req.body);
       const updatedProductVariant = await productService.updateProductVariant(id,variantId,payload);
@@ -82,4 +82,31 @@ export const getProducts = async (req:Request, res:Response, next:Function)=>{
   }
 }
 
+export const getMetaForFilters = async (req:Request, res:Response, next:Function)=>{
+  try {
+    const meta = await productService.getMetaForFilters();
+    res.status(200).json(ApiResponse.success(meta, {}, "Filter metadata retrieved successfully"));
+  } catch (error) {
+    next(error);
+  }
+}
 
+export const softDeleteProduct = async(req:Request, res:Response, next:Function)=>{
+  try {
+    const id = req.params.id as string;
+    const deletedProduct = await productService.softDeleteProduct(id);
+    res.status(200).json(ApiResponse.success(deletedProduct, {}, "Product deleted successfully"));
+  } catch (error) {
+    next(error);
+  }
+}
+
+export const softDeleteProductVariant = async(req:Request, res:Response, next:Function)=>{
+  try {
+    const variantId = req.params.variantId as string;
+    const deletedVariant = await productService.softDeleteProductVariant(variantId);
+    res.status(200).json(ApiResponse.success(deletedVariant, {}, "Product variant deleted successfully"));
+  } catch (error) {
+    next(error);
+   }
+}

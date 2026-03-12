@@ -26,7 +26,7 @@ export const bulkCreateBrands = async(req:Request,res:Response , next:NextFuncti
          })
       }
 
-     return res.status(201).json(ApiResponse.success(201,"Bulk Brands created successfully"))
+     return res.status(201).json(ApiResponse.success(201,{},"Bulk Brands created successfully"))
      } catch (error) {
         next(error)
      }

@@ -8,7 +8,7 @@ const categoryService=new CategoryService();
 export const createCategory=async(req:Request,res:Response,next:NextFunction)=>{
   try {
     let category = await categoryService.createCategory(CreateCategorySchema.parse(req.body));
-    res.status(201).json( ApiResponse.success( category,"Category created successfully"));
+    res.status(201).json( ApiResponse.success( category,{},"Category created successfully"));
   } catch (error) {
     next(error)
   }
@@ -38,7 +38,7 @@ export const updateCategory= async(req:Request,res:Response,next:NextFunction)=>
   id,
   data,
 })
-res.status(200).json( ApiResponse.success(category,"Category updated successfully"))
+res.status(200).json( ApiResponse.success(category,{},"Category updated successfully"))
   } catch (error) {
     next(error)
   }
@@ -48,7 +48,7 @@ export const deleteCategory=async(req:Request,res:Response,next:NextFunction)=>{
   try {
     const id = req.params.id as string;
     const category = await categoryService.deleteCategory(id);
-    res.status(200).json(ApiResponse.success(category,"Category deleted successfully"))
+    res.status(200).json(ApiResponse.success(category,{},"Category deleted successfully"))
   } catch (error) {
     next(error)
   }

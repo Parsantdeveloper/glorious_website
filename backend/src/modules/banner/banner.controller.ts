@@ -22,7 +22,7 @@ export const getBanners = async (req: Request, res: Response, next: NextFunction
          } 
        }))
       
-        return res.status(200).json( ApiResponse.success(banners,'Banners fetched successfully', ));
+        return res.status(200).json( ApiResponse.success(banners,{},'Banners fetched successfully', ));
     } catch (error) {
         next(error);
     }
@@ -56,7 +56,7 @@ export const createBanner = async (req: Request, res: Response, next: NextFuncti
         if(!banner){
             return  res.status(400).json( ApiResponse.error('Failed to create banner'));
         }
-        return res.status(201).json( ApiResponse.success(banner,'Banner created successfully'));
+        return res.status(201).json( ApiResponse.success(banner,{},'Banner created successfully'));
 
     } catch (error) {
         next(error);
@@ -74,7 +74,7 @@ export const deleteBanner = async (req: Request, res: Response, next: NextFuncti
         }
         if(banner.imageId) await cloudinary.uploader.destroy(banner.imageId);
 
-        return res.status(200).json( ApiResponse.success(banner,'Banner deleted successfully'));
+        return res.status(200).json( ApiResponse.success(banner,{},'Banner deleted successfully'));
     } catch (error) {
         next(error);
     }
@@ -91,7 +91,7 @@ export const updateBanner = async (req: Request, res: Response, next: NextFuncti
         if(!banner){
             return res.status(404).json( ApiResponse.error('Banner not found'));
         }
-        return res.status(200).json( ApiResponse.success(banner,'Banner updated successfully'));
+        return res.status(200).json( ApiResponse.success(banner,{},'Banner updated successfully'));
     } catch (error) {
         next(error);
     }

@@ -140,6 +140,12 @@ model Brand {
  @@index([isActive])
 }
 
+enum ProductStatus {
+  ACTIVE
+  DRAFT
+  ARCHIVED
+}
+
   model Product{
     id         String   @id @default(uuid())
     name       String
@@ -152,6 +158,7 @@ model Brand {
     avgRating Float?
     reviewCount Int     @default(0)
     isActive  Boolean  @default(true)
+    status    ProductStatus @default(ACTIVE)
     metadata Json? 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt

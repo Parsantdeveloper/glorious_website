@@ -1,12 +1,14 @@
 import express from "express"
- import { createProductHandler, createProductVariant, getProductById, getProducts, searchProducts, updateProduct, updateProductVariant } from "./product.controller";
-
+ import { createProductHandler, createProductVariant, getMetaForFilters, getProductById, getProducts, searchProducts, softDeleteProduct, softDeleteProductVariant, updateProduct, updateProductVariant, } from "./product.controller";
 const router = express.Router();
 
 // create a new product 
   router.post("/", createProductHandler);
 
   // create product variant 
+
+  // get products with filters and pagination
+router.get("/", getProducts);
 
   router.post("/:id/variants", createProductVariant);
 
@@ -15,23 +17,31 @@ const router = express.Router();
 // get products 
   router.get("/:slug", getProductById);
 
+//update product variant 
 
+router.put("/:slug/variant/:variantId", updateProductVariant);
  
 // update product 
   router.put("/:id", updateProduct);
 
-// update product variant 
-
-router.put("/:id/variants/:variantId", updateProductVariant);
 
 // router.put("/:id/specifications/:specId", updateProduct);
 
-// get products with filters and pagination
-router.get("/", getProducts);
+
 
 // delete product (soft delete)
   // router.delete("/:id", createProductHandler);
 
+ // get meta for filters 
 
+ router.get("/filters/meta", getMetaForFilters);
+
+ // soft delete product 
+
+ router.delete("/:id",softDeleteProduct);
+
+ // soft delete product variant
+ 
+ router.delete("/variant/:variantId", softDeleteProductVariant);
 
 export default router ;
