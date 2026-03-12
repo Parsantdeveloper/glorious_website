@@ -2,23 +2,11 @@
 
 import { useState,} from 'react'
 import { Button } from '@/components/ui/button'
-import { Plus, Edit2, Trash2, X } from 'lucide-react'
+import { Plus, X } from 'lucide-react'
 import BannerForm from '@/components/dashboard/banner/BannerForm'
 import BannerList from '@/components/dashboard/banner/BannerList'
-import { Spinner } from '@/components/ui/spinner'
 import { api } from '@/lib/axiosInstance'
-import { set } from 'zod'
-
-interface Banner {
-  id: string
-  imageUrl: string
-  linkUrl?: string
-  validFrom?: string
-  validUntil?: string
-  isActive: boolean
-  order: number
-}
-
+import { Banner } from '@/types/banner'
 
 
 export default function BannerPageClient({

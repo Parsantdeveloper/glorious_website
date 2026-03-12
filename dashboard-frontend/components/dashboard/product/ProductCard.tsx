@@ -2,20 +2,20 @@
 
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Edit2, Trash2, Eye, Package } from 'lucide-react'
+import { Package } from 'lucide-react'
 import { useState } from 'react'
 import { Product } from '@/types/product'
-interface Variant {
-  id: string
-  sku: string
-  name: string
-  images: string[]
-  attributes: Record<string, string>
-  basePrice: number
-  salePrice: number | null
-  stock: number
-}
-
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 interface ProductCardProps {
   product: Product
@@ -30,19 +30,17 @@ export default function ProductCard({ product, onDelete }: ProductCardProps) {
   const totalStock = product.variants.reduce((sum, v) => sum + v.stockCount, 0)
 
   const handleDelete = () => {
-    if (window.confirm(`Are you sure you want to delete "${product.name}"?`)) {
-      setIsDeleting(true)
-      onDelete(product.id)
-    }
+    setIsDeleting(true)
+    onDelete(product.id)
   }
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors p-4 flex items-center gap-4">
       {/* Product Image */}
-      <div className="relative w-24 h-24 flex-shrink-0 bg-gray-100 rounded-md overflow-hidden">
+      <div className="relative w-24 h-24 shrink-0 bg-gray-100 rounded-md overflow-hidden">
         {firstVariant?.images[0] && (
           <img
-            src={firstVariant.images[0] || '/placeholder.png'}
+            src={firstVariant.images[0].url || '/placeholder.png'}
             alt={product.name}
             className="w-full h-full object-cover"
           />
@@ -71,7 +69,7 @@ export default function ProductCard({ product, onDelete }: ProductCardProps) {
 
       {/* Variants Badge */}
       {product.variants.length > 0 && (
-        <div className="flex-shrink-0 px-3 py-1.5 bg-gray-100 rounded-md border border-gray-300">
+        <div className="shrink-0 px-3 py-1.5 bg-gray-100 rounded-md border border-gray-300">
           <span className="text-sm font-medium text-black">
             {product.variants.length} variant{product.variants.length !== 1 ? 's' : ''}
           </span>
@@ -89,15 +87,39 @@ export default function ProductCard({ product, onDelete }: ProductCardProps) {
             Edit
           </Button>
         </Link>
-        <Button
-          variant="outline"
-          className="border-red-300 text-red-600 hover:bg-red-50"
-          onClick={handleDelete}
-          disabled={isDeleting}
-          size="sm"
-        >
-          Delete
-        </Button>
+
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="outline"
+              className="border-red-300 text-red-600 hover:bg-red-50"
+              disabled={isDeleting}
+              size="sm"
+            >
+              {isDeleting ? 'Deleting...' : 'Delete'}
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete{' '}
+                <span className="font-semibold text-black">"{product.name}"</span>{' '}
+                and remove all its data from our servers.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                {isDeleting ? 'Deleting...' : 'Delete'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   )

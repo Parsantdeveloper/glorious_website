@@ -7,18 +7,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import ImageUpload, { UploadedImage } from '@/components/ui/image-upload'
-interface Category {
-  id: string
-  name: string
-  description?: string
-  imageUrl?: string
-  imageId?: string
-  parentId?: string | null
-  isActive: boolean
-  sortOrder: number
-  metaTitle?: string
-  metaDescription?: string
-}
+import { Category } from '@/types/category'
+
 
 interface CategoryFormProps {
   category?: Category | null
@@ -81,6 +71,7 @@ form.setValue('imageId', image?.id || '')
   setImage({
     url: category.imageUrl,
     id: category.imageId,
+    position:0
   })
 }, [category])
 

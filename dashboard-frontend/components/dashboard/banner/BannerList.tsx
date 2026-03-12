@@ -3,16 +3,8 @@
 import Image from 'next/image'
 import { Edit2, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Banner } from '@/types/banner'
 
-interface Banner {
-  id: string
-  imageUrl: string
-  linkUrl?: string
-  validFrom?: string
-  validUntil?: string
-  isActive: boolean
-  order: number
-}
 
 interface BannerListProps {
   banners: Banner[]

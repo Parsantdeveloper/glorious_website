@@ -1,16 +1,18 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Plus, Trash2, ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import ProductBasicForm from '@/components/dashboard/product/ProductBasicForm'
 import VariantsSection from '@/components/dashboard/product/VariantSection'
 import SpecificationsSection from '@/components/dashboard/product/SpecificationSelection'
-import { Variant,Specification } from '@/types/full_product'
+import { Variant, Specification } from '@/types/full_product'
 import { api } from '@/lib/axiosInstance'
 import toast from 'react-hot-toast'
+import { useFilterMetaStore } from '@/app/store/filterMetaStore'
+
 export interface ProductFormData {
   product: {
     name: string
@@ -23,12 +25,6 @@ export interface ProductFormData {
   specifications: Specification[]
 }
 
-
-
-
-
-
-
 export default function CreateProductPage() {
   const [formData, setFormData] = useState<ProductFormData>({
     product: {
@@ -40,8 +36,9 @@ export default function CreateProductPage() {
     },
     variants: [
       {
+        id: Date.now().toString(), // fix: initial variant needs an id
         price: 0,
-        salePrice: null,
+        salePrice: 0,
         stockCount: 0,
         attributes: {},
         images: [],
@@ -52,27 +49,9 @@ export default function CreateProductPage() {
     ],
     specifications: [],
   })
-  const [categories, setCategories] = useState<{ id: string; name: string }[]>([])
-  const [brands, setBrands] = useState<{ id: string; name: string }[]>([])
-    useEffect(()=>{
-       async function fetchCategoriesAndBrands(){
-         try {
-            let [categoriesResponse, brandsResponse] = await Promise.all([
-              api.get('/category'),
-              api.get('/brand')
-            ])
-            setCategories(categoriesResponse.data.data)
-            setBrands(brandsResponse.data.data)
-         } catch (error) {
-            console.error('Error fetching categories or brands:', error)
-         }
-           
-       }
-         fetchCategoriesAndBrands();
-    },[])
 
-   
-   
+  const { categories, brands } = useFilterMetaStore()
+
   const handleProductChange = (field: string, value: any) => {
     setFormData((prev) => ({
       ...prev,
@@ -96,7 +75,7 @@ export default function CreateProductPage() {
     const newVariant: Variant = {
       id: Date.now().toString(),
       price: 0,
-      salePrice: null,
+      salePrice: 0,
       stockCount: 0,
       attributes: {},
       images: [],
@@ -117,29 +96,28 @@ export default function CreateProductPage() {
     }))
   }
 
-  
   const handleSpecificationsChange = (specifications: Specification[]) => {
-  setFormData((prev) => ({ ...prev, specifications }))
-}
+    setFormData((prev) => ({ ...prev, specifications }))
+  }
 
- 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+        const variants = formData.variants.map(({ id, ...rest }) => rest)
 
-  const handleSubmit = async(e: React.FormEvent) => {
-    e.preventDefault()
-    // API integration will go here
-       try {
-        const responce = await api.post("/product",{
-          product: formData.product,
-          variants: formData.variants,
-          specifications: formData.specifications
-        })
-        console.log('Product created successfully:', responce.data)
-        toast.success('Product created successfully!')
-        redirect('/products')
-       } catch (error) {
-        console.error('Error creating product:', error)
-        toast.error('Failed to create product. Please try again.')
-       }
+    try {
+      const response = await api.post("/product", {
+        product: formData.product,
+        variants: variants,
+        specifications: formData.specifications,
+      })
+      toast.success('Product created successfully!')
+    } catch (error) {
+      console.error('Error creating product:', error)
+      toast.error('Failed to create product. Please try again.')
+      return ; 
+    }
+    redirect('/dashboard/product')
+
   }
 
   return (
@@ -158,7 +136,6 @@ export default function CreateProductPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Basic Information */}
           <ProductBasicForm
             data={formData.product}
             categories={categories}
@@ -166,7 +143,6 @@ export default function CreateProductPage() {
             onChange={handleProductChange}
           />
 
-          {/* Variants Section */}
           <VariantsSection
             variants={formData.variants}
             onVariantChange={handleVariantChange}
@@ -174,15 +150,13 @@ export default function CreateProductPage() {
             onRemoveVariant={handleRemoveVariant}
           />
 
-          {/* Specifications Section */}
           <SpecificationsSection
             specifications={formData.specifications}
             onSpecificationsChange={handleSpecificationsChange}
           />
 
-          {/* Form Actions */}
           <div className="flex gap-4 justify-end pt-6">
-            <Link href="/products">
+            <Link href="/dashboard/product">
               <Button type="button" variant="outline">
                 Cancel
               </Button>

@@ -42,7 +42,7 @@ export default function VariantsSection({
                     type="button"
                     variant="ghost"
                     size="sm"
-                    onClick={() => onRemoveVariant(variant.id)}
+                    onClick={() => onRemoveVariant(variant.id || "")}
                     className="text-red-600 hover:bg-red-50"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -52,7 +52,7 @@ export default function VariantsSection({
 
               <VariantForm
                 variant={variant}
-                onVariantChange={(field, value) => onVariantChange(variant.id, field, value)}
+                onVariantChange={(field, value) => onVariantChange(variant.id || "", field, value)}
               />
             </div>
           ))

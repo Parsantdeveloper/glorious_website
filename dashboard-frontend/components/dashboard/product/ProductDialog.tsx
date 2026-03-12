@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, ReactEventHandler } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -11,23 +11,12 @@ import {
 } from '@/components/ui/dialog'
 import { Plus, Trash2 } from 'lucide-react'
 import React from 'react'
+import { useFilterMetaStore } from '@/app/store/filterMetaStore'
+import { Product } from '@/types/full_product'
 
 interface Specification {
   key: string
   value: string
-}
-
-interface Product {
-  id: string
-  name: string
-  slug: string
-  description: string
-  brand: string
-  category: string
-  specifications: Specification[]
-  status: string
-  createdAt: Date
-  variants: any[]
 }
 
 interface ProductDialogProps {
@@ -46,24 +35,42 @@ export default function ProductDialog({
   children,
 }: ProductDialogProps) {
   const [isOpen, setIsOpen] = useState(controlledIsOpen ?? false)
+
+
   const [formData, setFormData] = useState({
     name: '',
-    brand: '',
+    brandId: '',
     description: '',
-    category: '',
-    status: 'ACTIVE',
+    categoryId: '',
+    // status: 'ACTIVE',
     specifications: [] as Specification[],
   })
 
+  // Sync controlled open prop
+  useEffect(() => {
+    setIsOpen(controlledIsOpen ?? false)
+  }, [controlledIsOpen])
+
+  // Populate form when dialog opens or product changes
   useEffect(() => {
     if (product) {
       setFormData({
-        name: product.name,
-        brand: product.brand,
-        description: product.description,
-        category: product.category,
-        status: product.status,
-        specifications: product.specifications || [],
+        name: product.name ?? '',
+        description: product.description ?? '',
+        // Resolve IDs — product.brand and product.category may be objects with id
+        brandId: (product.brand as any)?.id ?? product.brandId ?? '',
+        categoryId: (product.category as any)?.id ?? product.categoryId ?? '',
+        // status: product.status ?? 'ACTIVE',
+        specifications: product.specifications ?? [],
+      })
+    } else {
+      setFormData({
+        name: '',
+        brandId: '',
+        description: '',
+        categoryId: '',
+        // status: 'ACTIVE',
+        specifications: [],
       })
     }
   }, [product, isOpen])
@@ -73,12 +80,11 @@ export default function ProductDialog({
     onOpenChange?.(open)
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: value,
-    }))
+    setFormData(prev => ({ ...prev, [name]: value }))
   }
 
   const handleAddSpecification = () => {
@@ -107,8 +113,10 @@ export default function ProductDialog({
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     onSubmit(formData)
-    setIsOpen(false)
+    handleOpenChange(false)
   }
+     const {brands, categories} = useFilterMetaStore();
+
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
@@ -118,7 +126,7 @@ export default function ProductDialog({
         </div>
       )}
 
-      <DialogContent className="sm:max-w-[500px] bg-white">
+      <DialogContent className="sm:max-w-[500px] rounded-2xl p-4 bg-white max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-black">
             {product ? 'Edit Product' : 'Create New Product'}
@@ -147,35 +155,50 @@ export default function ProductDialog({
             />
           </div>
 
-          {/* Brand & Category */}
+          {/* Brand & Category — dropdowns */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-black mb-1">
                 Brand
               </label>
-              <input
-                type="text"
-                name="brand"
-                value={formData.brand}
+              <select
+                name="brandId"
+                value={brands?.find((b: any) => b.id === formData.brandId)?.id || ''}
                 onChange={handleChange}
-                placeholder="e.g., AudioTech"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black text-black"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black text-black bg-white"
                 required
-              />
+              >
+                <option value="" disabled>
+                  Select brand
+                </option>
+                {brands?.map((b: { id: string; name: string }) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name}
+                  </option>
+                ))}
+              </select>
             </div>
+
             <div>
               <label className="block text-sm font-medium text-black mb-1">
                 Category
               </label>
-              <input
-                type="text"
-                name="category"
-                value={formData.category}
+              <select
+                name="categoryId"
+                value={categories.find((c: any) => c.id === formData.categoryId)?.id || ''}
                 onChange={handleChange}
-                placeholder="e.g., Electronics"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black text-black"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black text-black bg-white"
                 required
-              />
+              >
+                <option value="" disabled>
+                  Select category
+                </option>
+                {categories?.map((c: { id: string; name: string }) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
@@ -195,7 +218,7 @@ export default function ProductDialog({
           </div>
 
           {/* Status */}
-          <div>
+          {/* <div>
             <label className="block text-sm font-medium text-black mb-1">
               Status
             </label>
@@ -203,13 +226,13 @@ export default function ProductDialog({
               name="status"
               value={formData.status}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black text-black"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black text-black bg-white"
             >
               <option value="ACTIVE">Active</option>
               <option value="INACTIVE">Inactive</option>
               <option value="DRAFT">Draft</option>
             </select>
-          </div>
+          </div> */}
 
           {/* Specifications */}
           <div className="space-y-3">
@@ -228,7 +251,7 @@ export default function ProductDialog({
             </div>
 
             {formData.specifications.map((spec, index) => (
-              <div key={index} className="flex gap-2 items-end">
+              <div key={index} className="flex gap-2 items-center">
                 <div className="flex-1">
                   <input
                     type="text"
@@ -250,7 +273,7 @@ export default function ProductDialog({
                 <button
                   type="button"
                   onClick={() => handleRemoveSpecification(index)}
-                  className="text-red-600 hover:text-red-700 p-2"
+                  className="text-red-600 hover:text-red-700 p-2 flex-shrink-0"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>

@@ -1,17 +1,13 @@
 import LoginClient from "@/components/client/login-component"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
-export default async function LoginPage() {
-  const res = await fetch("http://localhost:4000/api/user/me", {
-    cache: "no-store",
-    credentials: "include",
-    headers:await headers()
-  })
+import { getSessionFromCookieHeader } from "@/lib/auth-session"
 
-  const session = await res.json()
+export default async function LoginPage() {
+  const session = await getSessionFromCookieHeader((await headers()).get('cookie'))
 
   if (session) {
-    redirect("/")
+    redirect("/dashboard")
   }
 
   return <LoginClient />

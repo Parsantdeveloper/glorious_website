@@ -3,16 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import {api} from '@/lib/axiosInstance'
-interface Banner {
-  id: string
-  imageUrl: string
-  imageId: string
-  linkUrl?: string
-  validFrom?: string
-  validUntil?: string
-  isActive: boolean
-  order: number
-}
+import { Banner } from '@/types/banner'
 
 interface BannerFormProps {
   banner?: Banner | null

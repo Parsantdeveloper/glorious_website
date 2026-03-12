@@ -13,6 +13,8 @@ import ProductFilters, { ProductFilterValues, DEFAULT_FILTERS } from '@/componen
 import { useFilterMetaStore } from '@/app/store/filterMetaStore'
 import qs from "qs"
 import { useDebounce } from 'use-debounce'
+import { toast } from 'react-hot-toast'
+
 
 // Mock product data
 
@@ -76,8 +78,14 @@ const response = await api.get("/product", {
     setIsCreateDialogOpen(false)
   }
 
-  const handleDeleteProduct = (productId:string) => {
+  const handleDeleteProduct = async(productId:string) => {
     setProducts(products.filter(p => p.id !== productId))
+    try {
+      const responce = await api.delete(`/product/${productId}`)
+      toast.success("Product deleted successfully")
+    } catch (error) {
+      toast.error("Failed to delete product. Please try again.")
+    }
   }
  
 

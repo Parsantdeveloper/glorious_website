@@ -54,7 +54,7 @@ export interface Variant {
   productId?: string;
   sku?: string;
   price: number;
-  salePrice: number | null;
+  salePrice: number | 0;
   stockCount: number;
 
   isActive: boolean;

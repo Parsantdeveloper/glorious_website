@@ -7,20 +7,9 @@ import CategoryForm from '@/components/dashboard/category/CategoryForm'
 import CategoryList from '@/components/dashboard/category/CategoryList'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import {api} from '@/lib/axiosInstance'
+import { Category } from '@/types/category'
 
-interface Category {
-  id: string
-  name: string
-  description?: string
-  slug: string
-  imageUrl?: string
-  imageId?: string
-  parentId?: string | null
-  isActive: boolean
-  sortOrder: number
-  metaTitle?: string
-  metaDescription?: string
-}
+
 
 const createId = () => {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {

@@ -13,19 +13,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-interface Category {
-  id: string
-  name: string
-  description?: string
-  //   slug: string
-  imageUrl?: string
-  imageId?: string
-  parentId?: string | null
-  isActive: boolean
-  sortOrder: number
-  metaTitle?: string
-  metaDescription?: string
-}
+import { Category } from '@/types/category'
 
 interface CategoryListProps {
   categories: Category[]

@@ -3,15 +3,17 @@
 import { Spotlight } from "@/components/ui/spotlight"
 import { Button } from "@/components/ui/button"
 import {authClient} from "@/lib/auth-client"
+import { useSearchParams } from "next/navigation"
 
 
 
 export default function LoginPage() {
-  
- 
-    
-   const handleGoogleLogin = async() => {
-    console.log("button clicked")
+  const searchParams = useSearchParams()
+
+  const handleGoogleLogin = async() => {
+  const redirectPath = searchParams.get('redirect') || '/dashboard'
+  const callbackPath = redirectPath.startsWith('/') ? redirectPath : '/dashboard'
+
    await authClient.signIn.social({
     /**
      * The social provider ID
@@ -22,7 +24,7 @@ export default function LoginPage() {
      * A URL to redirect after the user authenticates with the provider
      * @default "/"
      */
-    callbackURL: "http://localhost:3000", 
+    callbackURL: `${window.location.origin}${callbackPath}`,
     /**
      * A URL to redirect if an error occurs during the sign in process
      */
@@ -60,7 +62,7 @@ export default function LoginPage() {
         {/* Google login button */}
         <Button
           onClick={handleGoogleLogin}
-          className="px-12 py-8 text-xl w-[500px] cursor-pointer font-semibold bg-white border-2 border-gray-300 text-gray-900 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 rounded-lg flex items-center justify-center gap-4"
+          className="px-12 py-8 text-xl w-125 cursor-pointer font-semibold bg-white border-2 border-gray-300 text-gray-900 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 rounded-lg flex items-center justify-center gap-4"
         >
           <svg className="w-6 h-6" viewBox="0 0 24 24">
             <path

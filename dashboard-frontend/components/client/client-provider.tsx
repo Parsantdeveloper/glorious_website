@@ -3,7 +3,15 @@
 import { useEffect } from "react"
 import { useAuthStore } from "@/app/store/useAuthStore"
 
-export default function ClientAuthProvider({ user, children }) {
+interface User {
+  id: string
+  name: string
+  email: string
+  image?: string
+  createdAt:Date
+}
+
+export default function ClientAuthProvider({ user, children }: { user: User | null; children: React.ReactNode }) {
   const setUser = useAuthStore(state => state.setUser)
 
   useEffect(() => {

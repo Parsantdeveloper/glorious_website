@@ -1,6 +1,17 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { Edit2, Trash2, Package } from 'lucide-react'
 import { useState } from 'react'
 import { Variant } from '@/types/full_product'
@@ -16,10 +27,8 @@ export default function VariantList({ variants, onEdit, onDelete }: VariantListP
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const handleDelete = (variantId: string) => {
-    if (window.confirm('Are you sure you want to delete this variant?')) {
-      setDeletingId(variantId)
-      onDelete(variantId)
-    }
+    setDeletingId(variantId)
+    onDelete(variantId)
   }
 
   return (
@@ -30,10 +39,10 @@ export default function VariantList({ variants, onEdit, onDelete }: VariantListP
           className="bg-white border border-gray-200 rounded-lg p-4 flex items-center gap-4 hover:border-gray-300 transition-colors"
         >
           {/* Image */}
-          <div className="w-24 h-24 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden">
+          <div className="w-24 h-24 shrink-0 bg-gray-100 rounded-lg overflow-hidden">
             {variant.images[0] && (
               <img
-                src={variant.images[0]}
+                src={variant.images[0].url}
                 alt={variant.images[0].alt || 'Variant Image'}
                 className="w-full h-full object-cover"
               />
@@ -105,7 +114,7 @@ export default function VariantList({ variants, onEdit, onDelete }: VariantListP
           </div>
 
           {/* Actions */}
-          <div className="flex gap-2 flex-shrink-0">
+          <div className="flex gap-2 shrink-0">
             <Button
               variant="outline"
               size="sm"
@@ -114,15 +123,38 @@ export default function VariantList({ variants, onEdit, onDelete }: VariantListP
             >
               <Edit2 className="w-4 h-4" />
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-red-300 text-red-600 hover:bg-red-50"
-              onClick={() => handleDelete(variant.id)}
-              disabled={deletingId === variant.id}
-            >
-              <Trash2 className="w-4 h-4" />
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-red-300 text-red-600 hover:bg-red-50"
+                  disabled={!variant.id || deletingId === variant.id}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete{' '}
+                    <span className="font-semibold text-black">"{variant.sku || 'this variant'}"</span>{' '}
+                    and remove its data from our servers.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={deletingId === variant.id}>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => variant.id && handleDelete(variant.id)}
+                    disabled={!variant.id || deletingId === variant.id}
+                    className="bg-red-600 hover:bg-red-700 text-white"
+                  >
+                    {deletingId === variant.id ? 'Deleting...' : 'Delete'}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
       ))}

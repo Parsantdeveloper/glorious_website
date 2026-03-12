@@ -149,11 +149,17 @@ export default function ImageUpload({
 
   // ── Remove ──────────────────────────────────────────────────────────────────
 
-  const removeImage = (index: number) => {
+  const removeImage = async (index: number) => {
     const updated = sortedImages
       .filter((_, i) => i !== index)
       .map((img, i) => ({ ...img, position: i }))
     onChange(multiple ? updated : null!)
+    try {
+      const res = await api.delete('/upload', { data: { public_id: sortedImages[index].id } })
+      console.log('Image deleted:', res.data)
+    } catch (error) {
+      console.error('Failed to delete image:', error)
+    }
   }
 
   // ── Reorder via dnd-kit ─────────────────────────────────────────────────────

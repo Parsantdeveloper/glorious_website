@@ -1,16 +1,48 @@
 'use client'
 
-import { useState , useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import VariantList from '@/components/dashboard/product/VariantList'
 import ProductDialog from '@/components/dashboard/product/ProductDialog'
 import VariantDialog from '@/components/dashboard/product/VariantDialog'
-import { ChevronLeft, Plus, Edit2, Trash2 } from 'lucide-react'
+import { ChevronLeft, Plus, Edit2 } from 'lucide-react'
 import { api } from '@/lib/axiosInstance'
 import { Product, Variant } from '@/types/full_product'
+import { set } from 'better-auth'
+import toast from 'react-hot-toast'
+// ─── Skeleton ────────────────────────────────────────────────────────────────
 
- 
+function ProductSkeleton() {
+  return (
+    <div className="space-y-6 animate-pulse">
+      <div className="h-9 w-24 bg-gray-200 rounded-lg" />
+      <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
+        <div className="h-8 w-1/3 bg-gray-200 rounded" />
+        <div className="h-4 w-2/3 bg-gray-100 rounded" />
+        <div className="flex gap-4">
+          <div className="h-4 w-24 bg-gray-100 rounded" />
+          <div className="h-4 w-24 bg-gray-100 rounded" />
+          <div className="h-6 w-16 bg-gray-100 rounded-full" />
+        </div>
+      </div>
+      <div className="space-y-3">
+        {[1, 2, 3].map(i => (
+          <div key={i} className="bg-white border border-gray-200 rounded-lg p-4 flex gap-4">
+            <div className="w-24 h-24 bg-gray-200 rounded-lg flex-shrink-0" />
+            <div className="flex-1 space-y-2">
+              <div className="h-4 w-1/4 bg-gray-200 rounded" />
+              <div className="h-3 w-1/3 bg-gray-100 rounded" />
+              <div className="h-3 w-1/2 bg-gray-100 rounded" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function ProductDetailPage() {
   const params = useParams()
@@ -18,78 +50,120 @@ export default function ProductDetailPage() {
   const slug = params.slug as string
 
   const [product, setProduct] = useState<Product | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-   useEffect(()=>{
-    async function fetchProduct(){
+  
+
+  useEffect(() => {
+    async function fetchProduct() {
       try {
-      const product = await api.get(`/product/${slug}`)
-      setProduct(product.data.data)
-      console.log('Fetched product:', product.data)
-    } catch (error) {
-      console.error('Error fetching product:', error)
+        setLoading(true)
+        setError(null)
+        const res = await api.get(`/product/${slug}`)
+        setProduct(res.data.data)
+      } catch (err) {
+        console.error('Error fetching product:', err)
+        setError('Failed to load product. Please try again.')
+      } finally {
+        setLoading(false)
+      }
     }
-  }
-  fetchProduct();
-    
-   },[])
+    fetchProduct()
+  }, [slug])
+
   const [isEditProductOpen, setIsEditProductOpen] = useState(false)
   const [isAddVariantOpen, setIsAddVariantOpen] = useState(false)
-  const [editingVariant, setEditingVariant] = useState(null)
+  const [editingVariant, setEditingVariant] = useState<Variant | null>(null)
   const [isEditVariantOpen, setIsEditVariantOpen] = useState(false)
 
-  if (!product) {
+  // ── Loading / error states ──────────────────────────────────────────────────
+
+  if (loading) return <ProductSkeleton />
+
+  if (error || !product) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-600 text-lg">Product not found</p>
-        <Button
-          variant="outline"
-          className="mt-4"
-          onClick={() => router.back()}
-        >
+        <p className="text-gray-600 text-lg">{error ?? 'Product not found'}</p>
+        <Button variant="outline" className="mt-4" onClick={() => router.back()}>
           Go Back
         </Button>
       </div>
     )
   }
 
-  const handleUpdateProduct = (data:Product) => {
-    setProduct({
-      ...product,
-      ...data,
-      specifications: data.specifications || product.specifications,
-    })
+  // ── Handlers ───────────────────────────────────────────────────────────────
+
+  const handleUpdateProduct = async(data: Product) => {
+    setProduct(prev => prev ? { ...prev, ...data, specifications: data.specifications ?? prev.specifications } : prev)
     setIsEditProductOpen(false)
+    try {
+      const res = await api.put(`/product/${product.id}`, data);
+      console.log(res.data)
+      setProduct(prev => prev ? { ...prev, ...res.data.data } : prev)
+      toast.success("Product updated successfully")
+    } catch (error) {
+      toast.error("Failed to update product")
+    }
   }
 
-  const handleAddVariant = (data:Variant) => {
-    const newVariant = {
-      id: Date.now().toString(),
-      ...data,
+  const handleAddVariant = (data: Variant) => {
+    try {
+      let payload = { ...data, productId: product.id }
+      const res:any = api.post('/variant', payload)
+      setProduct(prev => prev ? { ...prev, variants: [...(prev.variants ?? []), res.data.data] } : prev)
+      toast.success("Variant added successfully")
+    } catch (error) {
+      toast.error("Failed to add variant")
     }
-    setProduct({
-      ...product,
-      variants: [...product.variants, newVariant],
-    })
     setIsAddVariantOpen(false)
   }
 
-  const handleUpdateVariant = (data:Variant) => {
-    setProduct({
-      ...product,
-      variants: product.variants.map(v =>
-        v.id === editingVariant?.id ? { ...v, ...data } : v
-      ),
-    })
+  const handleUpdateVariant = (data: Variant) => {
+    setProduct(prev =>
+      prev
+        ? {
+            ...prev,
+            variants: prev.variants.map(v =>
+              v.id === editingVariant?.id ? { ...v, ...data } : v
+            ),
+          }
+        : prev
+    )
+    try { 
+      const res:any = api.put(`product/${product.slug}/variant/${editingVariant?.id}`, data);
+        setProduct(prev =>
+          prev
+            ? {
+                ...prev,
+                variants: prev.variants.map(v =>
+                  v.id === editingVariant?.id ? { ...v, ...res.data?.data } : v
+                ),
+              }
+            : prev
+        )
+        toast.success("Variant updated successfully")
+    } catch (error) {
+      toast.error("Failed to update variant")
+    }
     setIsEditVariantOpen(false)
     setEditingVariant(null)
   }
 
-  const handleDeleteVariant = (variantId: string) => {
-    setProduct({
-      ...product,
-      variants: product.variants.filter(v => v.id !== variantId),
-    })
+  const handleDeleteVariant = async(variantId: string) => {
+    setProduct(prev =>
+      prev ? { ...prev, variants: prev.variants.filter(v => v.id !== variantId) } : prev
+    )
+    try {
+      let responce = await api.delete(`/product/variant/${variantId}`)
+      toast.success("Variant deleted successfully")
+       setProduct(prev => prev ? { ...prev, variants: prev.variants.filter(v => v.id !== variantId) } : prev)
+    } catch (error) {
+      toast.error("Failed to delete variant")
+    }
   }
+
+  // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
     <div className="space-y-6">
@@ -121,9 +195,7 @@ export default function ProductDetailPage() {
                 <span className="font-medium text-black">Category:</span>
                 <span className="text-gray-600 ml-2">{product.category?.name}</span>
               </span>
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-black">
-                {product.status}
-              </span>
+              
             </div>
           </div>
           <ProductDialog
@@ -158,7 +230,9 @@ export default function ProductDetailPage() {
       {/* Variants Section */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-black">Variants ({product.variants?.length})</h2>
+          <h2 className="text-2xl font-bold text-black">
+            Variants ({product.variants?.length ?? 0})
+          </h2>
           <VariantDialog
             isOpen={isAddVariantOpen}
             onOpenChange={setIsAddVariantOpen}
@@ -171,13 +245,13 @@ export default function ProductDetailPage() {
           </VariantDialog>
         </div>
 
-        {product.variants?.length && product.variants.length >=0 ? (
+        {product.variants?.length > 0 ? (
           <VariantList
             variants={product.variants}
             onEdit={(variant) => {
               setEditingVariant(variant)
               setIsEditVariantOpen(true)
-            }}  
+            }}
             onDelete={handleDeleteVariant}
           />
         ) : (
@@ -193,7 +267,10 @@ export default function ProductDetailPage() {
         <VariantDialog
           variant={editingVariant}
           isOpen={isEditVariantOpen}
-          onOpenChange={setIsEditVariantOpen}
+          onOpenChange={(open) => {
+            setIsEditVariantOpen(open)
+            if (!open) setEditingVariant(null)
+          }}
           onSubmit={handleUpdateVariant}
         />
       )}
