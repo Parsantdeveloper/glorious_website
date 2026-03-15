@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic"
+
 import FilterMetaProvider  from '@/components/dashboard/product/FilterMetaProvider'
 export default async function ProductLayout({
   children,
