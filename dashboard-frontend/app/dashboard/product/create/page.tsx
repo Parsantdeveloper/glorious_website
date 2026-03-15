@@ -25,7 +25,7 @@ export interface ProductFormData {
   specifications: Specification[]
 }
 
-export default function CreateProductPage() {
+export default function page() {
   const [formData, setFormData] = useState<ProductFormData>({
     product: {
       name: '',

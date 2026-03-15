@@ -6,8 +6,8 @@ import { useFilterMetaStore } from "@/app/store/filterMetaStore"
  interface FilterMetaProviderProps {
     
     data:{
-        categories: Cateogry[]
-    brands: Brand[]
+        categories: Cateogry[]|null
+    brands: Brand[]|null
     }
     children: React.ReactNode
  }
@@ -27,8 +27,8 @@ export default function FilterMetaProvider({ data, children }: FilterMetaProvide
   const setBrands = useFilterMetaStore((s) => s.setBrands)
 
   useEffect(() => {
-    setCategories(data.categories)
-    setBrands(data.brands)
+    setCategories(data.categories||[])
+    setBrands(data.brands||[])
   }, [data])
 
   return children

@@ -12,7 +12,7 @@ export default async function ProductLayout({
   const filtersMeta = await response.json()
 
   return (
-    <FilterMetaProvider data={filtersMeta.data}>
+    <FilterMetaProvider data={filtersMeta.data||{categories:null,brands:null}}>
       {children}
     </FilterMetaProvider>
   )
